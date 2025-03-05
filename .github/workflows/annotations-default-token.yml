@@ -31,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TOKEN_TYPE: "Default GITHUB_TOKEN"
       
-      - name: Explain expected failure
+      - name: Explain success
         run: |
           echo "The previous step likely succeeded because the Automated Github Token"
           echo "does have permission to create check runs via the GitHub API."
