@@ -1,0 +1,25 @@
+{
+  "name": "github-actions-token-permissions-demo",
+  "version": "1.0.0",
+  "description": "Demonstrates GitHub Actions token permissions for annotations and PR creation",
+  "main": "src/main.js",
+  "scripts": {
+    "lint": "eslint src/",
+    "lint:report": "eslint --format=json --output-file=eslint-report.json src/"
+  },
+  "keywords": [
+    "github-actions",
+    "annotations",
+    "pull-request",
+    "token-permissions",
+    "demo"
+  ],
+  "author": "GitHub Actions Demo",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^19.0.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.40.0"
+  }
+}

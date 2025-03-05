@@ -1,0 +1,40 @@
+name: Annotations with PAT
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: 
+
+jobs:
+  create-annotations:
+    name: Create Check Run Annotations with PAT
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Create check run annotations via API
+        run: node .github/scripts/create-check-run.js
+        env:
+          # This uses a PAT with appropriate permissions
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+          TOKEN_TYPE: "Personal Access Token (PAT)"
+      
+      - name: Explain success
+        run: |
+          echo "The previous step should have failed because the PAT"
+          echo "has NO permission to create check runs via the GitHub API (altough all possible Permissions are set)."
+          echo "This demonstrates the disadvantage of using a PAT for certain operations."
+          echo "Compare this with the 'Annotations with Default Token' workflow, which succeeds."

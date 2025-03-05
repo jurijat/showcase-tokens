@@ -1,0 +1,142 @@
+name: Create Pull Request
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # First job: Attempt to create a PR with the default GITHUB_TOKEN (will fail)
+  create-pr-with-default-token:
+    name: Create PR with Default Token (Will Fail)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Git identity
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+      
+      - name: Create new branch
+        run: |
+          # Generate branch name with timestamp
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          BRANCH_NAME="default-token-demo-${TIMESTAMP}"
+          
+          git checkout -b $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+      
+      - name: Make changes
+        run: |
+          # Create or update a file with timestamp
+          echo "Last updated with default token: $(date)" > default-token-update.txt
+          
+          # Add a random number to ensure the change is unique
+          RANDOM_NUM=$((RANDOM % 1000))
+          echo "Random number: $RANDOM_NUM" >> default-token-update.txt
+      
+      - name: Commit changes
+        run: |
+          git add .
+          # Generate commit message with timestamp
+          COMMIT_MSG="Update with default token at $(date)"
+          git commit -m "$COMMIT_MSG"
+      
+      - name: Push changes
+        run: |
+          # This step uses the default GITHUB_TOKEN
+          git push -u origin $BRANCH_NAME
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      
+      - name: Attempt to create Pull Request (will fail)
+        id: create_pr_default
+        continue-on-error: true 
+        run: |
+          # Generate PR title with timestamp
+          PR_TITLE="PR created with default token at $(date)"
+          PR_BODY="This PR was automatically created using the default GITHUB_TOKEN.
+
+          This step will fail because the default GITHUB_TOKEN does not have permission to create PRs that trigger workflows.
+          
+          Compare this with the PAT job below, which will succeed."
+          
+          # Use GitHub CLI to create PR
+          gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base main --head $BRANCH_NAME
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      
+      - name: Explain expected failure
+        run: |
+          echo "::notice::The PR creation step likely failed because the default GITHUB_TOKEN"
+          echo "::notice::does not have permission to create PRs that trigger workflows."
+          echo "::notice::This demonstrates the limitation of the default token."
+
+  # Second job: Create a PR with a PAT (will succeed)
+  create-pr-with-pat:
+    name: Create PR with PAT (Will Succeed)
+    runs-on: ubuntu-latest
+    needs: create-pr-with-default-token 
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Git identity
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+      
+      - name: Create new branch
+        run: |
+          # Generate branch name with timestamp
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          BRANCH_NAME="pat-demo-${TIMESTAMP}"
+          
+          git checkout -b $BRANCH_NAME
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+      
+      - name: Make changes
+        run: |
+          # Create or update a file with timestamp
+          echo "Last updated with PAT: $(date)" > pat-update.txt
+          
+          # Add a random number to ensure the change is unique
+          RANDOM_NUM=$((RANDOM % 1000))
+          echo "Random number: $RANDOM_NUM" >> pat-update.txt
+      
+      - name: Commit changes
+        run: |
+          git add .
+          # Generate commit message with timestamp
+          COMMIT_MSG="Update with PAT at $(date)"
+          git commit -m "$COMMIT_MSG"
+      
+      - name: Push changes
+        run: |
+          # This step uses the PAT
+          git push -u origin $BRANCH_NAME
+        env:
+          # Important: This uses PRIVATE_GITHUB_TOKEN secret, not the default GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+      
+      - name: Create Pull Request (will succeed)
+        run: |
+          # Generate PR title with timestamp
+          PR_TITLE="PR created with PAT at $(date)"
+          PR_BODY="This PR was automatically created using a Personal Access Token (PAT).
+
+          This step succeeds because the PAT has permission to create PRs that trigger workflows.
+          
+          Compare this with the default token job above, which failed."
+          
+          # Use GitHub CLI to create PR
+          gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base main --head $BRANCH_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_GITHUB_TOKEN }}
+      
+      - name: Explain success
+        run: |
+          echo "::notice::The PR was successfully created using a Personal Access Token (PAT)"
+          echo "::notice::This demonstrates that a PAT is required for creating PRs that trigger workflows"

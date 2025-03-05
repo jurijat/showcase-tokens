@@ -1,0 +1,38 @@
+name: Annotations with Default Token
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: 
+
+jobs:
+  create-annotations:
+    name: Create Check Run Annotations with Default Token
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Create check run annotations via API
+        run: node .github/scripts/create-check-run.js
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TOKEN_TYPE: "Default GITHUB_TOKEN"
+      
+      - name: Explain expected failure
+        run: |
+          echo "The previous step likely succeeded because the Automated Github Token"
+          echo "does have permission to create check runs via the GitHub API."
+          echo "Compare this with the 'Annotations with PAT' workflow, which uses the GitHub Automated Token."

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Actions Token Permissions Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #24292e;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 10px;
+        }
+        h2 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        code {
+            background-color: rgba(27, 31, 35, 0.05);
+            border-radius: 3px;
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+            font-size: 85%;
+            margin: 0;
+            padding: 0.2em 0.4em;
+        }
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+            font-size: 85%;
+            line-height: 1.45;
+            overflow: auto;
+            padding: 16px;
+        }
+        .container {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .token-comparison {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .token-card {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            background-color: white;
+        }
+        .success {
+            color: #22863a;
+            font-weight: bold;
+        }
+        .failure {
+            color: #cb2431;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>GitHub Actions Token Permissions Demo</h1>
+    
+    <p>This repository demonstrates two specific GitHub Actions scenarios that highlight the permission differences between the default <code>GITHUB_TOKEN</code> and a Personal Access Token (PAT):</p>
+    
+    <div class="container">
+        <h2>1. Check Run Annotations Demo</h2>
+        <p>Shows how creating check run annotations via the GitHub API works with the default token but fails with a PAT.</p>
+        
+        <div class="token-comparison">
+            <div class="token-card">
+                <h3>Default GITHUB_TOKEN</h3>
+                <p><span class="success">✓</span> Can create annotations using workflow commands:</p>
+                <pre>echo "::warning file=file.js,line=10::This is a warning"</pre>
+                <p><span class="success">✓</span> Can create check run annotations via the GitHub API:</p>
+                <pre>octokit.checks.create({
+  annotations: [...]
+})</pre>
+            </div>
+            
+            <div class="token-card">
+                <h3>Personal Access Token (PAT)</h3>
+                <p><span class="success">✓</span> Can create annotations using workflow commands:</p>
+                <pre>echo "::warning file=file.js,line=10::This is a warning"</pre>
+                <p><span class="failure">✗</span> Cannot create check run annotations via the GitHub API:</p>
+                <pre>octokit.checks.create({
+  annotations: [...]
+})</pre>
+                <p>This fails even with all possible permissions set on the PAT!</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>2. PR Creation Demo</h2>
+        <p>Shows how creating a Pull Request from a workflow requires a PAT.</p>
+        
+        <div class="token-comparison">
+            <div class="token-card">
+                <h3>Default GITHUB_TOKEN</h3>
+                <p><span class="failure">✗</span> Cannot create PRs that trigger workflows:</p>
+                <pre>gh pr create --title "Title" --body "Body"</pre>
+                <p>PRs created with the default token won't trigger workflows for security reasons.</p>
+            </div>
+            
+            <div class="token-card">
+                <h3>Personal Access Token (PAT)</h3>
+                <p><span class="success">✓</span> Can create PRs that trigger workflows:</p>
+                <pre>gh pr create --title "Title" --body "Body"</pre>
+                <p>PRs created with a PAT will trigger workflows normally.</p>
+            </div>
+        </div>
+    </div>
+    
+    <h2>Why This Matters</h2>
+    <p>Understanding these permission differences is crucial when:</p>
+    <ul>
+        <li>Building CI/CD pipelines that need to create detailed annotations</li>
+        <li>Creating automated workflows that need to create PRs</li>
+        <li>Implementing security-sensitive automation</li>
+    </ul>
+    
+    <h2>Setup Instructions</h2>
+    <p>To run these demos in your own repository:</p>
+    <ol>
+        <li>Create a Personal Access Token with <code>repo</code> scope</li>
+        <li>Add it as a repository secret named <code>PRIVATE_GITHUB_TOKEN</code></li>
+        <li>Run the workflows to see the difference in behavior</li>
+    </ol>
+</body>
+</html>
