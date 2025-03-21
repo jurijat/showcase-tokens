@@ -19,7 +19,7 @@ The annotations workflows demonstrate the surprising difference between using th
    - Attempts to create check run annotations via the GitHub API
    - Will fail even with all possible permissions set on the PAT
 
-This demonstrates an interesting limitation: while the default `GITHUB_TOKEN` can create both simple workflow command annotations (using `::warning::` syntax) and check run annotations via the GitHub API, a PAT cannot create check run annotations despite having broader permissions in other areas.
+This demonstrates an interesting limitation: while the default `GITHUB_TOKEN` can create check run annotations via the GitHub API, a PAT cannot create check run annotations despite having broader permissions in other areas.
 
 ## PR Creation Demo
 
@@ -43,24 +43,3 @@ Key points:
    - Has broader permissions in many areas
    - Cannot create check run annotations via the API (surprising limitation)
    - Required for operations like creating PRs that trigger new workflow runs
-
-## Setup Instructions
-
-1. Create a Personal Access Token with `repo` scope:
-   - Go to GitHub Settings > Developer settings > Personal access tokens
-   - Generate a new token with the `repo` scope
-   - Copy the token value
-
-2. Add the token as a repository secret:
-   - Go to your repository Settings > Secrets and variables > Actions
-   - Create a new repository secret named `PRIVATE_GITHUB_TOKEN`
-   - Paste your token value
-
-3. The workflows using PAT will now be able to create check run annotations and PRs
-
-## Security Considerations
-
-- The default `GITHUB_TOKEN` has intentional limitations for security reasons
-- When using a PAT, always use the minimum required permissions
-- Store PATs securely as repository secrets
-- Regularly rotate your PATs to minimize security risks
